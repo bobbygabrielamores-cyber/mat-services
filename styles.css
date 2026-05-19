@@ -458,21 +458,20 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .about-photo-placeholder {
   width: 100%;
   aspect-ratio: 3 / 4;
-  background: linear-gradient(150deg, var(--teal-light) 0%, #cce8e8 100%);
   border-radius: 24px;
   overflow: hidden;
   border: 3px solid rgba(14,128,128,.12);
   position: relative;
   z-index: 1;
+  background: var(--teal-light);
 }
-.photo-inner {
-  width: 100%; height: 100%;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  gap: 14px; color: var(--teal);
+.about-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
 }
-.photo-inner svg { width: 110px; height: 130px; opacity: .4; }
-.photo-inner p   { font-size: .82rem; color: var(--teal); opacity: .5; text-align: center; line-height: 1.6; }
 
 .about-card-accent {
   position: absolute;
