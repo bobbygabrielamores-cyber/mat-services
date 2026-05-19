@@ -114,3 +114,107 @@ document.getElementById('contactForm').addEventListener('submit', e => {
 
 // Run active-link check on load
 highlightActiveNav();
+
+// ============================================
+//   BOOKING CALENDAR & TIME SLOTS
+// ============================================
+
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December'
+];
+const TIME_SLOTS = [
+  '8:00 AM','9:00 AM','10:00 AM','11:00 AM',
+  '1:00 PM','2:00 PM','3:00 PM','4:00 PM'
+];
+
+let calCurrent = new Date();
+calCurrent.setDate(1);
+
+function renderCalendar() {
+  const label  = document.getElementById('calMonthLabel');
+  const grid   = document.getElementById('calGrid');
+  if (!label || !grid) return;
+
+  label.textContent = MONTHS[calCurrent.getMonth()] + ' ' + calCurrent.getFullYear();
+
+  // Remove previously rendered day buttons (keep the 7 day-name headers)
+  grid.querySelectorAll('.cal-day').forEach(d => d.remove());
+
+  const today      = new Date(); today.setHours(0,0,0,0);
+  const firstDay   = new Date(calCurrent.getFullYear(), calCurrent.getMonth(), 1).getDay();
+  const daysInMonth = new Date(calCurrent.getFullYear(), calCurrent.getMonth() + 1, 0).getDate();
+  const selected   = document.getElementById('selectedDate').value;
+
+  // Empty offset cells
+  for (let i = 0; i < firstDay; i++) {
+    const blank = document.createElement('div');
+    blank.className = 'cal-day';
+    blank.style.visibility = 'hidden';
+    grid.appendChild(blank);
+  }
+
+  for (let d = 1; d <= daysInMonth; d++) {
+    const btn     = document.createElement('button');
+    const thisDate = new Date(calCurrent.getFullYear(), calCurrent.getMonth(), d);
+    const dateStr  = `${thisDate.getFullYear()}-${String(thisDate.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow      = thisDate.getDay(); // 0=Sun, 6=Sat
+
+    btn.type      = 'button';
+    btn.className = 'cal-day';
+    btn.textContent = d;
+
+    if (thisDate < today || dow === 0 || dow === 6) {
+      btn.disabled = true;
+      if (dow === 0 || dow === 6) btn.classList.add('weekend');
+    }
+    if (thisDate.toDateString() === today.toDateString()) btn.classList.add('today');
+    if (dateStr === selected) btn.classList.add('selected');
+
+    btn.addEventListener('click', () => {
+      grid.querySelectorAll('.cal-day').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('selectedDate').value = dateStr;
+
+      // Show time slots, reset any prior selection
+      const group = document.getElementById('timeSlotsGroup');
+      group.style.display = 'block';
+      group.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      document.getElementById('selectedTime').value = '';
+      document.querySelectorAll('.time-slot').forEach(t => t.classList.remove('selected'));
+    });
+
+    grid.appendChild(btn);
+  }
+}
+
+// Prev / Next month navigation
+document.getElementById('calPrev')?.addEventListener('click', () => {
+  const today = new Date(); today.setDate(1); today.setHours(0,0,0,0);
+  const prev  = new Date(calCurrent.getFullYear(), calCurrent.getMonth() - 1, 1);
+  if (prev >= today) { calCurrent = prev; renderCalendar(); }
+});
+document.getElementById('calNext')?.addEventListener('click', () => {
+  calCurrent = new Date(calCurrent.getFullYear(), calCurrent.getMonth() + 1, 1);
+  renderCalendar();
+});
+
+// Render time slot buttons
+const timeSlotsEl = document.getElementById('timeSlots');
+if (timeSlotsEl) {
+  TIME_SLOTS.forEach(time => {
+    const btn = document.createElement('button');
+    btn.type      = 'button';
+    btn.className = 'time-slot';
+    btn.textContent = time;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.time-slot').forEach(t => t.classList.remove('selected'));
+      btn.classList.add('selected');
+      document.getElementById('selectedTime').value = time;
+    });
+    timeSlotsEl.appendChild(btn);
+  });
+}
+
+// Initial render
+renderCalendar();
