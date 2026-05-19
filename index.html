@@ -529,73 +529,16 @@
           </div>
         </div>
 
-        <div class="contact-form-wrap">
-          <form class="contact-form" id="contactForm" novalidate>
-            <h3>Book a Session</h3>
-            <div class="form-row">
-              <div class="form-group">
-                <label for="fname">First Name</label>
-                <input type="text" id="fname" name="fname" placeholder="Juan" required />
-              </div>
-              <div class="form-group">
-                <label for="lname">Last Name</label>
-                <input type="text" id="lname" name="lname" placeholder="dela Cruz" required />
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="femail">Email Address</label>
-              <input type="email" id="femail" name="email" placeholder="juan@email.com" required />
-            </div>
-            <div class="form-group">
-              <label for="service">Service of Interest</label>
-              <select id="service" name="service">
-                <option value="">Select a service…</option>
-                <option>Psychological Services</option>
-                <option>Academic Support</option>
-                <option>Human Resource Solutions</option>
-                <option>Online Consultation</option>
-              </select>
-            </div>
-            <!-- Date Picker -->
-            <div class="form-group">
-              <label>Preferred Date <span class="label-note">Mon – Fri only</span></label>
-              <div class="calendar-wrap">
-                <div class="cal-header">
-                  <button type="button" class="cal-nav" id="calPrev" aria-label="Previous month">&#8249;</button>
-                  <span class="cal-month-label" id="calMonthLabel"></span>
-                  <button type="button" class="cal-nav" id="calNext" aria-label="Next month">&#8250;</button>
-                </div>
-                <div class="cal-grid" id="calGrid">
-                  <div class="cal-day-name">Su</div>
-                  <div class="cal-day-name">Mo</div>
-                  <div class="cal-day-name">Tu</div>
-                  <div class="cal-day-name">We</div>
-                  <div class="cal-day-name">Th</div>
-                  <div class="cal-day-name">Fr</div>
-                  <div class="cal-day-name">Sa</div>
-                </div>
-              </div>
-              <input type="hidden" id="selectedDate" name="preferred_date" />
-            </div>
-
-            <!-- Time Slots -->
-            <div class="form-group" id="timeSlotsGroup" style="display:none">
-              <label>Preferred Time</label>
-              <div class="time-slots" id="timeSlots"></div>
-              <input type="hidden" id="selectedTime" name="preferred_time" />
-            </div>
-
-            <div class="form-group">
-              <label for="message">Message</label>
-              <textarea id="message" name="message" rows="3"
-                placeholder="Tell us a little about what you are looking for…"></textarea>
-            </div>
-            <button type="submit" class="btn-primary btn-full">Send Message</button>
-            <p class="form-note">
-              <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="13" height="13"><path d="M8 1a3.5 3.5 0 00-3.5 3.5V6H3a1 1 0 00-1 1v7a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1h-1.5V4.5A3.5 3.5 0 008 1zm-2 5V4.5a2 2 0 114 0V6H6z"/></svg>
-              All inquiries are strictly confidential.
-            </p>
-          </form>
+        <div class="calendly-wrap">
+          <div class="calendly-inline-widget"
+               data-url="https://calendly.com/swetlove101/30min?hide_gdpr_banner=1&primary_color=0e8080"
+               style="min-width:300px;height:700px;">
+          </div>
+          <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
+          <p class="form-note" style="margin-top:12px;">
+            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="13" height="13"><path d="M8 1a3.5 3.5 0 00-3.5 3.5V6H3a1 1 0 00-1 1v7a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1h-1.5V4.5A3.5 3.5 0 008 1zm-2 5V4.5a2 2 0 114 0V6H6z"/></svg>
+            All bookings are strictly confidential.
+          </p>
         </div>
 
       </div>

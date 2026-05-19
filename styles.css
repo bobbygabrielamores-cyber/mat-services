@@ -731,8 +731,8 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
    ============================================ */
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr 1.25fr;
-  gap: 80px;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 60px;
   align-items: start;
 }
 .contact-info .section-title { margin-bottom: 12px; }
@@ -767,13 +767,14 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .social-link svg { width: 17px; height: 17px; }
 .social-link:hover { background: var(--teal); color: var(--white); transform: translateY(-2px); }
 
-/* Form */
-.contact-form-wrap {
+/* Calendly embed */
+.calendly-wrap {
   background: var(--white);
   border-radius: 20px;
-  padding: 44px 40px;
+  padding: 24px;
   box-shadow: var(--shadow-md);
   border: 1px solid var(--gray-200);
+  overflow: hidden;
 }
 .contact-form h3 {
   font-family: var(--font-heading);
