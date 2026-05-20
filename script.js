@@ -310,19 +310,30 @@ highlightActiveNav();
 
   // ── Time slots ─────────────────────────────────────────────────────────────
 
-  // Reliable PHT helpers — use Intl API so they're correct on any device timezone
-  function getPHTDateStr() {
-    // "YYYY-MM-DD" in Asia/Manila right now
-    return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' });
-  }
-  function getPHTHour() {
-    // Current hour (0-23) in Asia/Manila
-    const h = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila', hour: 'numeric', hour12: false });
-    return h === '24' ? 0 : parseInt(h, 10);
-  }
-  function getPHTMin() {
-    // Current minute in Asia/Manila
-    return parseInt(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila', minute: 'numeric' }), 10);
+  // One reliable PHT helper using Intl formatToParts + UTC+8 fallback
+  function getPHTInfo() {
+    try {
+      const parts = new Intl.DateTimeFormat('en-US', {
+        timeZone : 'Asia/Manila',
+        year     : 'numeric', month  : '2-digit', day   : '2-digit',
+        hour     : '2-digit', minute : '2-digit', hour12: false
+      }).formatToParts(new Date())
+        .reduce((a, p) => { a[p.type] = p.value; return a; }, {});
+      const h = parts.hour === '24' ? 0 : parseInt(parts.hour, 10);
+      return {
+        dateStr: `${parts.year}-${parts.month}-${parts.day}`,
+        hour   : h,
+        minute : parseInt(parts.minute, 10)
+      };
+    } catch (_) {
+      // Fallback: manually shift UTC → UTC+8 and read UTC fields
+      const pht = new Date(Date.now() + 8 * 3600000);
+      return {
+        dateStr: `${pht.getUTCFullYear()}-${String(pht.getUTCMonth()+1).padStart(2,'0')}-${String(pht.getUTCDate()).padStart(2,'0')}`,
+        hour   : pht.getUTCHours(),
+        minute : pht.getUTCMinutes()
+      };
+    }
   }
 
   function slotHour(timeStr) {
@@ -342,10 +353,10 @@ highlightActiveNav();
     const booked = bkState.bookedSlots[key] || [];
 
     // Is the selected date today in PHT? (Intl-based, correct on any device timezone)
-    const phtDateStr = getPHTDateStr();
-    const isToday    = key === phtDateStr;
-    const phtHour    = getPHTHour();
-    const phtMin     = getPHTMin();
+    const pht      = getPHTInfo();
+    const isToday  = key === pht.dateStr;
+    const phtHour  = pht.hour;
+    const phtMin   = pht.minute;
 
     ALL_SLOTS.forEach(time => {
       const btn = document.createElement('button');
