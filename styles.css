@@ -1061,7 +1061,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   letter-spacing: .1em; color: #16a34a;
 }
 .bk-gcash-qr {
-  width: 140px; height: 140px; object-fit: contain;
+  width: 220px; height: 220px; object-fit: contain;
   border-radius: 10px; border: 2px solid #bbf7d0;
 }
 .bk-gcash-info {
