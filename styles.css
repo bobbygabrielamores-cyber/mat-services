@@ -937,6 +937,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .bk-times::-webkit-scrollbar-track { background: var(--gray-100); border-radius: 2px; }
 .bk-times::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 2px; }
 
+.bk-loading { text-align: center; color: var(--gray-400); font-size: .88rem; padding: 24px 0; }
 .bk-time-row { display: grid; grid-template-columns: 1fr; gap: 8px; }
 .bk-time-row.selected-row { grid-template-columns: 1fr 1fr; }
 

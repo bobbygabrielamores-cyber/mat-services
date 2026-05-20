@@ -186,6 +186,19 @@ highlightActiveNav();
     return `${DAYS_SHORT[d.getDay()]}, ${MONTHS_LONG[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
   }
 
+  // ── Fetch booked slots from Google Sheet ───────────────────────────────────
+  async function fetchBookedSlots(isoDate) {
+    try {
+      const res  = await fetch(`${APPS_SCRIPT_URL}?date=${isoDate}`);
+      const data = await res.json();
+      if (data.bookedTimes && Array.isArray(data.bookedTimes)) {
+        bkState.bookedSlots[isoDate] = data.bookedTimes;
+      }
+    } catch (e) {
+      // Silently fail — all slots show as available if Sheet is unreachable
+    }
+  }
+
   // ── Step 1 → Step 2: service selection ────────────────────────────────────
   svcBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -257,17 +270,21 @@ highlightActiveNav();
         btn.disabled = true;
         btn.classList.add('bk-disabled');
       } else {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', async () => {
           calGrid.querySelectorAll('.bk-cal-day').forEach(b => b.classList.remove('bk-selected'));
           btn.classList.add('bk-selected');
           bkState.selectedDate = thisDate;
           bkState.selectedTime = '';
 
-          // Populate and go to step 3
-          renderTimeSlots();
+          // Go to step 3 immediately with loading state
           if (dateLabel) dateLabel.textContent = formatDateLong(thisDate);
           if (svcLabel3) svcLabel3.textContent = bkState.service;
+          if (timesEl) timesEl.innerHTML = '<p class="bk-loading">Checking availability…</p>';
           goToStep(3);
+
+          // Fetch live booked slots then render
+          await fetchBookedSlots(key);
+          renderTimeSlots();
         });
       }
 
