@@ -187,6 +187,8 @@ highlightActiveNav();
   }
 
   // ── Fetch ALL booked slots once on page load ───────────────────────────────
+  let slotsLoadedPromise = null; // awaited before rendering time slots
+
   async function fetchAllBookedSlots() {
     try {
       const res  = await fetch(APPS_SCRIPT_URL);
@@ -197,9 +199,9 @@ highlightActiveNav();
     } catch (err) { /* silently fail — all slots show as available */ }
   }
 
-  // Per-date fetch (uses cached data — no extra network call needed)
+  // Per-date fetch (no-op — data already loaded on init)
   function fetchBookedSlots(isoDate) {
-    return Promise.resolve(); // data already loaded on init
+    return Promise.resolve();
   }
 
   // ── Step 1 → Step 2: service selection ────────────────────────────────────
@@ -285,8 +287,8 @@ highlightActiveNav();
           if (timesEl) timesEl.innerHTML = '<p class="bk-loading">Checking availability…</p>';
           goToStep(3);
 
-          // Fetch live booked slots then render
-          await fetchBookedSlots(key);
+          // Wait for the initial slot fetch to finish (handles race condition on fast clicks)
+          await slotsLoadedPromise;
           renderTimeSlots();
         });
       }
@@ -307,11 +309,20 @@ highlightActiveNav();
   });
 
   // ── Time slots ─────────────────────────────────────────────────────────────
-  function getPHTNow() {
-    // Returns current time as a Date adjusted to Philippine Standard Time (UTC+8)
-    const now = new Date();
-    const phtOffsetMs = 8 * 60 * 60 * 1000;
-    return new Date(now.getTime() + (now.getTimezoneOffset() * 60 * 1000) + phtOffsetMs);
+
+  // Reliable PHT helpers — use Intl API so they're correct on any device timezone
+  function getPHTDateStr() {
+    // "YYYY-MM-DD" in Asia/Manila right now
+    return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Manila' });
+  }
+  function getPHTHour() {
+    // Current hour (0-23) in Asia/Manila
+    const h = new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila', hour: 'numeric', hour12: false });
+    return h === '24' ? 0 : parseInt(h, 10);
+  }
+  function getPHTMin() {
+    // Current minute in Asia/Manila
+    return parseInt(new Date().toLocaleString('en-US', { timeZone: 'Asia/Manila', minute: 'numeric' }), 10);
   }
 
   function slotHour(timeStr) {
@@ -330,13 +341,11 @@ highlightActiveNav();
     const key    = bkState.selectedDate ? dateKey(bkState.selectedDate) : '';
     const booked = bkState.bookedSlots[key] || [];
 
-    // Is the selected date today in PHT?
-    const phtNow  = getPHTNow();
-    const phtToday = new Date(phtNow); phtToday.setHours(0,0,0,0);
-    const selDay   = new Date(bkState.selectedDate); selDay.setHours(0,0,0,0);
-    const isToday  = selDay.getTime() === phtToday.getTime();
-    const phtHour  = phtNow.getHours();
-    const phtMin   = phtNow.getMinutes();
+    // Is the selected date today in PHT? (Intl-based, correct on any device timezone)
+    const phtDateStr = getPHTDateStr();
+    const isToday    = key === phtDateStr;
+    const phtHour    = getPHTHour();
+    const phtMin     = getPHTMin();
 
     ALL_SLOTS.forEach(time => {
       const btn = document.createElement('button');
@@ -474,6 +483,6 @@ highlightActiveNav();
 
   // ── Initial calendar render + preload all booked slots ────────────────────
   renderBkCalendar();
-  fetchAllBookedSlots();
+  slotsLoadedPromise = fetchAllBookedSlots(); // store promise so date clicks can await it
 
 })(); // end IIFE
