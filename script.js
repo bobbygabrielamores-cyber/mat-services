@@ -287,6 +287,22 @@ highlightActiveNav();
   });
 
   // ── Time slots ─────────────────────────────────────────────────────────────
+  function getPHTNow() {
+    // Returns current time as a Date adjusted to Philippine Standard Time (UTC+8)
+    const now = new Date();
+    const phtOffsetMs = 8 * 60 * 60 * 1000;
+    return new Date(now.getTime() + (now.getTimezoneOffset() * 60 * 1000) + phtOffsetMs);
+  }
+
+  function slotHour(timeStr) {
+    // Converts "8:00 AM" / "1:00 PM" → 24h integer
+    const [hhmm, period] = timeStr.split(' ');
+    let h = parseInt(hhmm.split(':')[0], 10);
+    if (period === 'PM' && h !== 12) h += 12;
+    if (period === 'AM' && h === 12) h = 0;
+    return h;
+  }
+
   function renderTimeSlots() {
     if (!timesEl) return;
     timesEl.innerHTML = '';
@@ -294,16 +310,29 @@ highlightActiveNav();
     const key    = bkState.selectedDate ? dateKey(bkState.selectedDate) : '';
     const booked = bkState.bookedSlots[key] || [];
 
+    // Is the selected date today in PHT?
+    const phtNow  = getPHTNow();
+    const phtToday = new Date(phtNow); phtToday.setHours(0,0,0,0);
+    const selDay   = new Date(bkState.selectedDate); selDay.setHours(0,0,0,0);
+    const isToday  = selDay.getTime() === phtToday.getTime();
+    const phtHour  = phtNow.getHours();
+    const phtMin   = phtNow.getMinutes();
+
     ALL_SLOTS.forEach(time => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'bk-time-btn';
       btn.textContent = time;
 
-      if (booked.includes(time)) {
+      const h = slotHour(time);
+      // Grey out if: already booked OR (today and slot hour has passed or is current hour with no buffer)
+      const isPast   = isToday && (h < phtHour || (h === phtHour && phtMin > 0));
+      const isBooked = booked.includes(time);
+
+      if (isPast || isBooked) {
         btn.disabled = true;
         btn.classList.add('bk-booked');
-        btn.title = 'Already booked';
+        btn.title = isPast ? 'This time has already passed' : 'Already booked';
       } else {
         btn.addEventListener('click', () => {
           timesEl.querySelectorAll('.bk-time-btn').forEach(t => t.classList.remove('bk-time-selected'));
