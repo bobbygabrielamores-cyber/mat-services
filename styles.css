@@ -183,10 +183,12 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   object-fit: contain;
 }
 .footer-logo-img {
-  height: 64px;
+  height: 80px;
+  width: auto;
   background: var(--white);
-  border-radius: 8px;
-  padding: 6px 10px;
+  border-radius: 12px;
+  padding: 10px 16px;
+  display: block;
 }
 .logo-mark {
   width: 42px; height: 42px;
