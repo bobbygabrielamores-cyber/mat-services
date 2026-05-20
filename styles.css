@@ -1061,8 +1061,22 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   letter-spacing: .1em; color: #16a34a;
 }
 .bk-gcash-qr {
-  width: 220px; height: 220px; object-fit: contain;
+  width: 260px; height: 260px; object-fit: contain;
   border-radius: 10px; border: 2px solid #bbf7d0;
+  cursor: zoom-in; transition: transform .2s;
+}
+.bk-gcash-qr:hover { transform: scale(1.03); }
+
+/* Lightbox overlay */
+.qr-lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.85); z-index: 9999;
+  align-items: center; justify-content: center; cursor: zoom-out;
+}
+.qr-lightbox.open { display: flex; }
+.qr-lightbox img {
+  max-width: 90vw; max-height: 90vh;
+  border-radius: 12px; box-shadow: 0 8px 40px rgba(0,0,0,.6);
 }
 .bk-gcash-info {
   width: 100%; display: flex; flex-direction: column; gap: 6px;

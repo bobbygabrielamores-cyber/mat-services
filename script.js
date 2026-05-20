@@ -482,6 +482,12 @@ highlightActiveNav();
     });
   });
 
+  // ── QR code lightbox ──────────────────────────────────────────────────────
+  const qrImg      = document.getElementById('bkQrImg');
+  const qrLightbox = document.getElementById('qrLightbox');
+  qrImg?.addEventListener('click', () => qrLightbox?.classList.add('open'));
+  qrLightbox?.addEventListener('click', () => qrLightbox?.classList.remove('open'));
+
   // ── "Book Another Session" ─────────────────────────────────────────────────
   newBookingBtn?.addEventListener('click', () => {
     bkState.service      = '';
