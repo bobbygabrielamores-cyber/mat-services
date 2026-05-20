@@ -187,6 +187,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   width: auto;
   display: block;
   object-fit: contain;
+  mix-blend-mode: screen;
 }
 .logo-mark {
   width: 42px; height: 42px;
