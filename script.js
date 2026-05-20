@@ -94,8 +94,8 @@ const revealObserver = new IntersectionObserver(entries => {
 
 document.querySelectorAll('[data-aos]').forEach(el => revealObserver.observe(el));
 
-// --- Contact form (demo handler) ---
-document.getElementById('contactForm').addEventListener('submit', e => {
+// Contact form handler (kept for compatibility; booking widget is the primary CTA)
+document.getElementById('contactForm')?.addEventListener('submit', e => {
   e.preventDefault();
   const btn = e.target.querySelector('button[type="submit"]');
   const original = btn.textContent;
@@ -116,105 +116,295 @@ document.getElementById('contactForm').addEventListener('submit', e => {
 highlightActiveNav();
 
 // ============================================
-//   BOOKING CALENDAR & TIME SLOTS
+//   CUSTOM BOOKING WIDGET
 // ============================================
 
-const MONTHS = [
-  'January','February','March','April','May','June',
-  'July','August','September','October','November','December'
-];
-const TIME_SLOTS = [
-  '8:00 AM','9:00 AM','10:00 AM','11:00 AM',
-  '1:00 PM','2:00 PM','3:00 PM','4:00 PM'
-];
+(function () {
+  // ── Constants ──────────────────────────────────────────────────────────────
+  const MONTHS_LONG  = ['January','February','March','April','May','June',
+                        'July','August','September','October','November','December'];
+  const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun',
+                        'Jul','Aug','Sep','Oct','Nov','Dec'];
+  const DAYS_SHORT   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
-let calCurrent = new Date();
-calCurrent.setDate(1);
+  // All available time slots (Mon–Fri)
+  const ALL_SLOTS = [
+    '8:00 AM','9:00 AM','10:00 AM','11:00 AM',
+    '1:00 PM','2:00 PM','3:00 PM','4:00 PM'
+  ];
 
-function renderCalendar() {
-  const label  = document.getElementById('calMonthLabel');
-  const grid   = document.getElementById('calGrid');
-  if (!label || !grid) return;
+  // ── State ──────────────────────────────────────────────────────────────────
+  let bkState = {
+    service    : '',        // selected service name
+    serviceDesc: '',        // service description
+    calDate    : new Date(),// month being shown in the calendar
+    selectedDate: null,     // Date object of chosen day
+    selectedTime: '',       // e.g. "10:00 AM"
+    bookedSlots : {}        // { "YYYY-MM-DD": ["10:00 AM", ...] }
+  };
+  bkState.calDate.setDate(1);
 
-  label.textContent = MONTHS[calCurrent.getMonth()] + ' ' + calCurrent.getFullYear();
+  // ── DOM references ─────────────────────────────────────────────────────────
+  const widget        = document.getElementById('bkWidget');
+  if (!widget) return; // guard: only run when widget exists
 
-  // Remove previously rendered day buttons (keep the 7 day-name headers)
-  grid.querySelectorAll('.cal-day').forEach(d => d.remove());
+  const steps         = widget.querySelectorAll('.bk-step');
+  const svcBtns       = widget.querySelectorAll('.bk-svc-btn');
+  const backBtns      = widget.querySelectorAll('.bk-back-btn');
+  const calGrid       = document.getElementById('bkCalGrid');
+  const calMonthLabel = document.getElementById('bkCalMonth');
+  const calPrev       = document.getElementById('bkCalPrev');
+  const calNext       = document.getElementById('bkCalNext');
+  const svcLabel2     = document.getElementById('bkSvcLabel');
+  const svcLabel3     = document.getElementById('bkSvcLabel3');
+  const dateLabel     = document.getElementById('bkDateLabel');
+  const timesEl       = document.getElementById('bkTimes');
+  const summaryEl     = document.getElementById('bkSummary');
+  const bkForm        = document.getElementById('bkForm');
+  const confirmedEl   = document.getElementById('bkConfirmedDetails');
+  const newBookingBtn = document.getElementById('bkNewBooking');
 
-  const today      = new Date(); today.setHours(0,0,0,0);
-  const firstDay   = new Date(calCurrent.getFullYear(), calCurrent.getMonth(), 1).getDay();
-  const daysInMonth = new Date(calCurrent.getFullYear(), calCurrent.getMonth() + 1, 0).getDate();
-  const selected   = document.getElementById('selectedDate').value;
-
-  // Empty offset cells
-  for (let i = 0; i < firstDay; i++) {
-    const blank = document.createElement('div');
-    blank.className = 'cal-day';
-    blank.style.visibility = 'hidden';
-    grid.appendChild(blank);
-  }
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const btn     = document.createElement('button');
-    const thisDate = new Date(calCurrent.getFullYear(), calCurrent.getMonth(), d);
-    const dateStr  = `${thisDate.getFullYear()}-${String(thisDate.getMonth()+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const dow      = thisDate.getDay(); // 0=Sun, 6=Sat
-
-    btn.type      = 'button';
-    btn.className = 'cal-day';
-    btn.textContent = d;
-
-    if (thisDate < today || dow === 0 || dow === 6) {
-      btn.disabled = true;
-      if (dow === 0 || dow === 6) btn.classList.add('weekend');
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function goToStep(n) {
+    steps.forEach(s => s.classList.remove('active'));
+    const target = document.getElementById(`bkStep${n}`);
+    if (target) {
+      target.classList.add('active');
+      // Scroll widget into view nicely on mobile
+      widget.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
-    if (thisDate.toDateString() === today.toDateString()) btn.classList.add('today');
-    if (dateStr === selected) btn.classList.add('selected');
-
-    btn.addEventListener('click', () => {
-      grid.querySelectorAll('.cal-day').forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-      document.getElementById('selectedDate').value = dateStr;
-
-      // Show time slots, reset any prior selection
-      const group = document.getElementById('timeSlotsGroup');
-      group.style.display = 'block';
-      group.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-      document.getElementById('selectedTime').value = '';
-      document.querySelectorAll('.time-slot').forEach(t => t.classList.remove('selected'));
-    });
-
-    grid.appendChild(btn);
   }
-}
 
-// Prev / Next month navigation
-document.getElementById('calPrev')?.addEventListener('click', () => {
-  const today = new Date(); today.setDate(1); today.setHours(0,0,0,0);
-  const prev  = new Date(calCurrent.getFullYear(), calCurrent.getMonth() - 1, 1);
-  if (prev >= today) { calCurrent = prev; renderCalendar(); }
-});
-document.getElementById('calNext')?.addEventListener('click', () => {
-  calCurrent = new Date(calCurrent.getFullYear(), calCurrent.getMonth() + 1, 1);
-  renderCalendar();
-});
+  function dateKey(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }
 
-// Render time slot buttons
-const timeSlotsEl = document.getElementById('timeSlots');
-if (timeSlotsEl) {
-  TIME_SLOTS.forEach(time => {
-    const btn = document.createElement('button');
-    btn.type      = 'button';
-    btn.className = 'time-slot';
-    btn.textContent = time;
+  function formatDateLong(d) {
+    return `${DAYS_SHORT[d.getDay()]}, ${MONTHS_LONG[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  }
+
+  // ── Step 1 → Step 2: service selection ────────────────────────────────────
+  svcBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.time-slot').forEach(t => t.classList.remove('selected'));
-      btn.classList.add('selected');
-      document.getElementById('selectedTime').value = time;
-    });
-    timeSlotsEl.appendChild(btn);
-  });
-}
+      bkState.service     = btn.dataset.service;
+      bkState.serviceDesc = btn.dataset.desc;
+      // Reset downstream selections
+      bkState.selectedDate = null;
+      bkState.selectedTime = '';
 
-// Initial render
-renderCalendar();
+      // Update service labels shown in later steps
+      if (svcLabel2) svcLabel2.textContent = bkState.service;
+      if (svcLabel3) svcLabel3.textContent = bkState.service;
+
+      renderBkCalendar();
+      goToStep(2);
+    });
+  });
+
+  // ── Back buttons ───────────────────────────────────────────────────────────
+  backBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = parseInt(btn.dataset.target, 10);
+      goToStep(target);
+    });
+  });
+
+  // ── Calendar rendering ─────────────────────────────────────────────────────
+  function renderBkCalendar() {
+    if (!calGrid || !calMonthLabel) return;
+
+    calMonthLabel.textContent =
+      MONTHS_LONG[bkState.calDate.getMonth()] + ' ' + bkState.calDate.getFullYear();
+
+    // Remove old day cells (keep the 7 header dname cells)
+    calGrid.querySelectorAll('.bk-cal-day').forEach(d => d.remove());
+
+    const today      = new Date(); today.setHours(0,0,0,0);
+    const year       = bkState.calDate.getFullYear();
+    const month      = bkState.calDate.getMonth();
+    const firstDow   = new Date(year, month, 1).getDay();
+    const daysInMo   = new Date(year, month + 1, 0).getDate();
+    const selKey     = bkState.selectedDate ? dateKey(bkState.selectedDate) : '';
+
+    // Blank offset cells
+    for (let i = 0; i < firstDow; i++) {
+      const blank = document.createElement('div');
+      blank.className = 'bk-cal-day';
+      blank.setAttribute('aria-hidden', 'true');
+      calGrid.appendChild(blank);
+    }
+
+    for (let d = 1; d <= daysInMo; d++) {
+      const thisDate = new Date(year, month, d);
+      const dow      = thisDate.getDay();
+      const key      = dateKey(thisDate);
+      const isPast   = thisDate < today;
+      const isWeekend = dow === 0 || dow === 6;
+      const isToday  = thisDate.toDateString() === today.toDateString();
+
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'bk-cal-day';
+      btn.textContent = d;
+
+      if (isToday)  btn.classList.add('bk-today');
+      if (key === selKey) btn.classList.add('bk-selected');
+
+      if (isPast || isWeekend) {
+        btn.disabled = true;
+        btn.classList.add('bk-disabled');
+      } else {
+        btn.addEventListener('click', () => {
+          calGrid.querySelectorAll('.bk-cal-day').forEach(b => b.classList.remove('bk-selected'));
+          btn.classList.add('bk-selected');
+          bkState.selectedDate = thisDate;
+          bkState.selectedTime = '';
+
+          // Populate and go to step 3
+          renderTimeSlots();
+          if (dateLabel) dateLabel.textContent = formatDateLong(thisDate);
+          if (svcLabel3) svcLabel3.textContent = bkState.service;
+          goToStep(3);
+        });
+      }
+
+      calGrid.appendChild(btn);
+    }
+  }
+
+  // Prev / Next month
+  calPrev?.addEventListener('click', () => {
+    const today = new Date(); today.setDate(1); today.setHours(0,0,0,0);
+    const prev  = new Date(bkState.calDate.getFullYear(), bkState.calDate.getMonth() - 1, 1);
+    if (prev >= today) { bkState.calDate = prev; renderBkCalendar(); }
+  });
+  calNext?.addEventListener('click', () => {
+    bkState.calDate = new Date(bkState.calDate.getFullYear(), bkState.calDate.getMonth() + 1, 1);
+    renderBkCalendar();
+  });
+
+  // ── Time slots ─────────────────────────────────────────────────────────────
+  function renderTimeSlots() {
+    if (!timesEl) return;
+    timesEl.innerHTML = '';
+
+    const key    = bkState.selectedDate ? dateKey(bkState.selectedDate) : '';
+    const booked = bkState.bookedSlots[key] || [];
+
+    ALL_SLOTS.forEach(time => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'bk-time-btn';
+      btn.textContent = time;
+
+      if (booked.includes(time)) {
+        btn.disabled = true;
+        btn.classList.add('bk-booked');
+        btn.title = 'Already booked';
+      } else {
+        btn.addEventListener('click', () => {
+          timesEl.querySelectorAll('.bk-time-btn').forEach(t => t.classList.remove('bk-time-selected'));
+          btn.classList.add('bk-time-selected');
+          bkState.selectedTime = time;
+
+          // Brief delay for visual feedback, then advance
+          setTimeout(() => {
+            buildSummary();
+            goToStep(4);
+          }, 180);
+        });
+      }
+
+      timesEl.appendChild(btn);
+    });
+  }
+
+  // ── Step 4 summary card ────────────────────────────────────────────────────
+  function buildSummary() {
+    if (!summaryEl || !bkState.selectedDate) return;
+    summaryEl.innerHTML = `
+      <div class="bk-summary-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>
+        <span>${formatDateLong(bkState.selectedDate)} · ${bkState.selectedTime}</span>
+      </div>
+      <div class="bk-summary-row">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+        <span>${bkState.service} · 1 hr · Google Meet / Zoom</span>
+      </div>
+    `;
+  }
+
+  // ── Form submission → Step 5 ───────────────────────────────────────────────
+  bkForm?.addEventListener('submit', e => {
+    e.preventDefault();
+
+    const fname  = document.getElementById('bkFname').value.trim();
+    const lname  = document.getElementById('bkLname').value.trim();
+    const email  = document.getElementById('bkEmail').value.trim();
+    const notes  = document.getElementById('bkNotes').value.trim();
+
+    // Basic validation
+    if (!fname || !lname || !email) {
+      // Highlight empty required fields
+      [document.getElementById('bkFname'), document.getElementById('bkLname'), document.getElementById('bkEmail')]
+        .forEach(inp => {
+          if (!inp.value.trim()) inp.classList.add('bk-input-error');
+          else inp.classList.remove('bk-input-error');
+        });
+      return;
+    }
+
+    const submitBtn = bkForm.querySelector('button[type="submit"]');
+    submitBtn.textContent = 'Submitting…';
+    submitBtn.disabled = true;
+
+    // Mark the slot as booked locally so it greys out if they come back
+    const key = bkState.selectedDate ? dateKey(bkState.selectedDate) : '';
+    if (key) {
+      if (!bkState.bookedSlots[key]) bkState.bookedSlots[key] = [];
+      bkState.bookedSlots[key].push(bkState.selectedTime);
+    }
+
+    // Populate confirmation card
+    if (confirmedEl) {
+      confirmedEl.innerHTML = `
+        <div class="bk-conf-row"><strong>Name</strong><span>${fname} ${lname}</span></div>
+        <div class="bk-conf-row"><strong>Email</strong><span>${email}</span></div>
+        <div class="bk-conf-row"><strong>Service</strong><span>${bkState.service}</span></div>
+        <div class="bk-conf-row"><strong>Date &amp; Time</strong><span>${bkState.selectedDate ? formatDateLong(bkState.selectedDate) : ''} · ${bkState.selectedTime}</span></div>
+        <div class="bk-conf-row"><strong>Duration</strong><span>1 hour · Google Meet / Zoom</span></div>
+        ${notes ? `<div class="bk-conf-row"><strong>Notes</strong><span>${notes}</span></div>` : ''}
+      `;
+    }
+
+    // Simulate async submission (replace with fetch() to Google Sheets later)
+    setTimeout(() => {
+      submitBtn.textContent = 'Confirm Booking';
+      submitBtn.disabled = false;
+      bkForm.reset();
+      bkForm.querySelectorAll('.bk-input-error').forEach(el => el.classList.remove('bk-input-error'));
+      goToStep(5);
+    }, 800);
+  });
+
+  // Clear error styling on input
+  ['bkFname','bkLname','bkEmail'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', function () {
+      this.classList.remove('bk-input-error');
+    });
+  });
+
+  // ── "Book Another Session" ─────────────────────────────────────────────────
+  newBookingBtn?.addEventListener('click', () => {
+    bkState.service      = '';
+    bkState.serviceDesc  = '';
+    bkState.selectedDate = null;
+    bkState.selectedTime = '';
+    bkState.calDate      = new Date(); bkState.calDate.setDate(1);
+    goToStep(1);
+  });
+
+  // ── Initial calendar render ────────────────────────────────────────────────
+  renderBkCalendar();
+
+})(); // end IIFE

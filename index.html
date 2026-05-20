@@ -529,17 +529,151 @@
           </div>
         </div>
 
-        <div class="calendly-wrap">
-          <div class="calendly-inline-widget"
-               data-url="https://calendly.com/swetlove101/30min?hide_gdpr_banner=1&primary_color=0e8080"
-               style="min-width:300px;height:700px;">
+        <!-- ===== CUSTOM BOOKING WIDGET ===== -->
+        <div class="bk-widget" id="bkWidget">
+
+          <!-- Step 1: Choose Service -->
+          <div class="bk-step active" id="bkStep1">
+            <div class="bk-top">
+              <div class="bk-avatar">MAT</div>
+              <div>
+                <p class="bk-host">Marl Anthony Tabañag</p>
+                <h3 class="bk-title">Book a Consultation</h3>
+              </div>
+            </div>
+            <p class="bk-sub">Select the type of session you need</p>
+            <div class="bk-services">
+              <button class="bk-svc-btn" data-service="Psychological Services" data-desc="Counseling, therapy &amp; assessment">
+                <div class="bk-svc-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M9 8c0 1 .5 2 1.5 2.5"/></svg>
+                </div>
+                <div class="bk-svc-text">
+                  <strong>Psychological Services</strong>
+                  <span>Counseling, therapy &amp; assessment</span>
+                </div>
+                <span class="bk-svc-arrow">›</span>
+              </button>
+              <button class="bk-svc-btn" data-service="Academic Support" data-desc="Learning, career &amp; student guidance">
+                <div class="bk-svc-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3L2 8l10 5 10-5-10-5z"/><path d="M2 8v8"/><path d="M6 10.5v5a6 6 0 0012 0v-5"/></svg>
+                </div>
+                <div class="bk-svc-text">
+                  <strong>Academic Support</strong>
+                  <span>Learning, career &amp; student guidance</span>
+                </div>
+                <span class="bk-svc-arrow">›</span>
+              </button>
+              <button class="bk-svc-btn" data-service="Human Resource Solutions" data-desc="Workplace wellness &amp; HR assessment">
+                <div class="bk-svc-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="8" height="14" rx="1"/><rect x="14" y="3" width="8" height="18" rx="1"/><path d="M10 12h4"/></svg>
+                </div>
+                <div class="bk-svc-text">
+                  <strong>Human Resource Solutions</strong>
+                  <span>Workplace wellness &amp; HR assessment</span>
+                </div>
+                <span class="bk-svc-arrow">›</span>
+              </button>
+            </div>
+            <p class="bk-note">
+              <svg viewBox="0 0 16 16" fill="currentColor" width="12" height="12"><path d="M8 1a3.5 3.5 0 00-3.5 3.5V6H3a1 1 0 00-1 1v7a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1h-1.5V4.5A3.5 3.5 0 008 1zm-2 5V4.5a2 2 0 114 0V6H6z"/></svg>
+              All sessions are strictly confidential
+            </p>
           </div>
-          <script type="text/javascript" src="https://assets.calendly.com/assets/external/widget.js" async></script>
-          <p class="form-note" style="margin-top:12px;">
-            <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true" width="13" height="13"><path d="M8 1a3.5 3.5 0 00-3.5 3.5V6H3a1 1 0 00-1 1v7a1 1 0 001 1h10a1 1 0 001-1V7a1 1 0 00-1-1h-1.5V4.5A3.5 3.5 0 008 1zm-2 5V4.5a2 2 0 114 0V6H6z"/></svg>
-            All bookings are strictly confidential.
-          </p>
+
+          <!-- Step 2: Pick a Day -->
+          <div class="bk-step" id="bkStep2">
+            <div class="bk-step-header">
+              <button class="bk-back-btn" data-target="1">‹ Back</button>
+              <div class="bk-step-info">
+                <span class="bk-selected-svc" id="bkSvcLabel"></span>
+                <span class="bk-meta">· 1 hr · Google Meet</span>
+              </div>
+            </div>
+            <h3 class="bk-step-title">Select a Day</h3>
+            <div class="bk-cal">
+              <div class="bk-cal-nav">
+                <button class="bk-cal-arrow" id="bkCalPrev">‹</button>
+                <span class="bk-cal-month" id="bkCalMonth"></span>
+                <button class="bk-cal-arrow" id="bkCalNext">›</button>
+              </div>
+              <div class="bk-cal-grid" id="bkCalGrid">
+                <div class="bk-cal-dname">SUN</div>
+                <div class="bk-cal-dname">MON</div>
+                <div class="bk-cal-dname">TUE</div>
+                <div class="bk-cal-dname">WED</div>
+                <div class="bk-cal-dname">THU</div>
+                <div class="bk-cal-dname">FRI</div>
+                <div class="bk-cal-dname">SAT</div>
+              </div>
+            </div>
+            <div class="bk-tz">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15 15 0 010 20M12 2a15 15 0 000 20"/></svg>
+              Philippines Standard Time (UTC+8)
+            </div>
+          </div>
+
+          <!-- Step 3: Pick a Time -->
+          <div class="bk-step" id="bkStep3">
+            <div class="bk-step-header">
+              <button class="bk-back-btn" data-target="2">‹ Back</button>
+              <div class="bk-step-info">
+                <span class="bk-selected-svc" id="bkSvcLabel3"></span>
+                <span class="bk-meta">· 1 hr</span>
+              </div>
+            </div>
+            <h3 class="bk-step-title">Select a Time</h3>
+            <p class="bk-selected-date-label" id="bkDateLabel"></p>
+            <div class="bk-times" id="bkTimes"></div>
+          </div>
+
+          <!-- Step 4: Your Details -->
+          <div class="bk-step" id="bkStep4">
+            <div class="bk-step-header">
+              <button class="bk-back-btn" data-target="3">‹ Back</button>
+            </div>
+            <div class="bk-confirm-summary" id="bkSummary"></div>
+            <h3 class="bk-step-title">Your Details</h3>
+            <form class="bk-form" id="bkForm" novalidate>
+              <div class="bk-form-row">
+                <div class="bk-form-group">
+                  <label for="bkFname">First Name *</label>
+                  <input type="text" id="bkFname" placeholder="Juan" required />
+                </div>
+                <div class="bk-form-group">
+                  <label for="bkLname">Last Name *</label>
+                  <input type="text" id="bkLname" placeholder="dela Cruz" required />
+                </div>
+              </div>
+              <div class="bk-form-group">
+                <label for="bkEmail">Email Address *</label>
+                <input type="email" id="bkEmail" placeholder="juan@email.com" required />
+              </div>
+              <div class="bk-form-group">
+                <label for="bkNotes">Notes <span style="font-weight:400;text-transform:none;">(optional)</span></label>
+                <textarea id="bkNotes" rows="3" placeholder="Anything you'd like Marl to know before the session…"></textarea>
+              </div>
+              <button type="submit" class="btn-primary btn-full bk-submit">Confirm Booking</button>
+            </form>
+          </div>
+
+          <!-- Step 5: Confirmed -->
+          <div class="bk-step" id="bkStep5">
+            <div class="bk-confirmed">
+              <div class="bk-check-anim">
+                <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <circle cx="26" cy="26" r="25" stroke="currentColor" stroke-width="2"/>
+                  <path d="M14 26l8 8 16-16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <h3>You're Booked!</h3>
+              <p>A confirmation has been sent to your email.</p>
+              <div class="bk-confirmed-details" id="bkConfirmedDetails"></div>
+              <button class="bk-new-booking" id="bkNewBooking">Book Another Session</button>
+            </div>
+          </div>
+
         </div>
+        <!-- ===== END BOOKING WIDGET ===== -->
 
       </div>
     </div>
