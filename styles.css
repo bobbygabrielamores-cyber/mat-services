@@ -177,13 +177,13 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   flex-shrink: 0;
 }
 .nav-logo-img {
-  height: 48px;
+  height: 64px;
   width: auto;
   display: block;
   object-fit: contain;
 }
 .footer-logo-img {
-  height: 52px;
+  height: 64px;
   background: var(--white);
   border-radius: 8px;
   padding: 6px 10px;
