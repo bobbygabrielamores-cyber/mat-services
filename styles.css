@@ -184,7 +184,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .footer-logo-img {
   height: 52px;
-  filter: brightness(0) invert(1);
+  background: var(--white);
+  border-radius: 8px;
+  padding: 6px 10px;
 }
 .logo-mark {
   width: 42px; height: 42px;
