@@ -176,6 +176,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   gap: 11px;
   flex-shrink: 0;
 }
+.nav-logo-img {
+  height: 48px;
+  width: auto;
+  display: block;
+  object-fit: contain;
+}
+.footer-logo-img {
+  height: 52px;
+  filter: brightness(0) invert(1);
+}
 .logo-mark {
   width: 42px; height: 42px;
   background: linear-gradient(135deg, var(--teal), var(--teal-dark));
