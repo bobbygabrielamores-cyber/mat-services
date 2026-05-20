@@ -186,17 +186,30 @@ highlightActiveNav();
     return `${DAYS_SHORT[d.getDay()]}, ${MONTHS_LONG[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
   }
 
-  // ── Fetch booked slots from Google Sheet ───────────────────────────────────
-  async function fetchBookedSlots(isoDate) {
-    try {
-      const res  = await fetch(`${APPS_SCRIPT_URL}?date=${isoDate}`);
-      const data = await res.json();
-      if (data.bookedTimes && Array.isArray(data.bookedTimes)) {
-        bkState.bookedSlots[isoDate] = data.bookedTimes;
-      }
-    } catch (e) {
-      // Silently fail — all slots show as available if Sheet is unreachable
-    }
+  // ── Fetch booked slots via JSONP (bypasses CORS) ──────────────────────────
+  function fetchBookedSlots(isoDate) {
+    return new Promise(resolve => {
+      const cbName = 'bkCb_' + Date.now();
+      const script = document.createElement('script');
+      let done = false;
+
+      window[cbName] = function(data) {
+        done = true;
+        if (data.bookedTimes && Array.isArray(data.bookedTimes)) {
+          bkState.bookedSlots[isoDate] = data.bookedTimes;
+        }
+        script.remove();
+        delete window[cbName];
+        resolve();
+      };
+
+      script.src = `${APPS_SCRIPT_URL}?date=${isoDate}&callback=${cbName}`;
+      script.onerror = () => { if (!done) { delete window[cbName]; resolve(); } };
+      document.head.appendChild(script);
+
+      // 5s timeout fallback
+      setTimeout(() => { if (!done) { delete window[cbName]; script.remove(); resolve(); } }, 5000);
+    });
   }
 
   // ── Step 1 → Step 2: service selection ────────────────────────────────────
