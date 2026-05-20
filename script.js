@@ -451,6 +451,7 @@ highlightActiveNav();
         notes,
         service : bkState.service,
         date    : bkState.selectedDate ? formatDateLong(bkState.selectedDate) : '',
+        isoDate : bkState.selectedDate ? dateKey(bkState.selectedDate) : '',
         time    : bkState.selectedTime
       })
     })
