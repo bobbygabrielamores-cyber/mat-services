@@ -120,6 +120,9 @@ highlightActiveNav();
 // ============================================
 
 (function () {
+  // ── Google Sheets backend ──────────────────────────────────────────────────
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz9Ta4pWjqBqlec3XsF9tMLSYDwXFmc_JY45o8J_dYkLQq1kdCIL_VGVsl_jFC7xoTM/exec';
+
   // ── Constants ──────────────────────────────────────────────────────────────
   const MONTHS_LONG  = ['January','February','March','April','May','June',
                         'July','August','September','October','November','December'];
@@ -377,14 +380,29 @@ highlightActiveNav();
       `;
     }
 
-    // Simulate async submission (replace with fetch() to Google Sheets later)
-    setTimeout(() => {
+    // Send booking to Google Sheets
+    fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        fname,
+        lname,
+        email,
+        notes,
+        service : bkState.service,
+        date    : bkState.selectedDate ? formatDateLong(bkState.selectedDate) : '',
+        time    : bkState.selectedTime
+      })
+    })
+    .catch(() => {}) // silently handle network errors — booking still confirms
+    .finally(() => {
       submitBtn.textContent = 'Confirm Booking';
       submitBtn.disabled = false;
       bkForm.reset();
       bkForm.querySelectorAll('.bk-input-error').forEach(el => el.classList.remove('bk-input-error'));
       goToStep(5);
-    }, 800);
+    });
   });
 
   // Clear error styling on input
