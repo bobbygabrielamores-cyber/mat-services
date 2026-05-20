@@ -186,30 +186,20 @@ highlightActiveNav();
     return `${DAYS_SHORT[d.getDay()]}, ${MONTHS_LONG[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
   }
 
-  // ── Fetch booked slots via JSONP (bypasses CORS) ──────────────────────────
+  // ── Fetch ALL booked slots once on page load ───────────────────────────────
+  async function fetchAllBookedSlots() {
+    try {
+      const res  = await fetch(APPS_SCRIPT_URL);
+      const data = await res.json();
+      if (data.slots && typeof data.slots === 'object') {
+        Object.assign(bkState.bookedSlots, data.slots);
+      }
+    } catch (err) { /* silently fail — all slots show as available */ }
+  }
+
+  // Per-date fetch (uses cached data — no extra network call needed)
   function fetchBookedSlots(isoDate) {
-    return new Promise(resolve => {
-      const cbName = 'bkCb_' + Date.now();
-      const script = document.createElement('script');
-      let done = false;
-
-      window[cbName] = function(data) {
-        done = true;
-        if (data.bookedTimes && Array.isArray(data.bookedTimes)) {
-          bkState.bookedSlots[isoDate] = data.bookedTimes;
-        }
-        script.remove();
-        delete window[cbName];
-        resolve();
-      };
-
-      script.src = `${APPS_SCRIPT_URL}?date=${isoDate}&callback=${cbName}`;
-      script.onerror = () => { if (!done) { delete window[cbName]; resolve(); } };
-      document.head.appendChild(script);
-
-      // 5s timeout fallback
-      setTimeout(() => { if (!done) { delete window[cbName]; script.remove(); resolve(); } }, 5000);
-    });
+    return Promise.resolve(); // data already loaded on init
   }
 
   // ── Step 1 → Step 2: service selection ────────────────────────────────────
@@ -482,7 +472,8 @@ highlightActiveNav();
     goToStep(1);
   });
 
-  // ── Initial calendar render ────────────────────────────────────────────────
+  // ── Initial calendar render + preload all booked slots ────────────────────
   renderBkCalendar();
+  fetchAllBookedSlots();
 
 })(); // end IIFE
