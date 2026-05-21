@@ -518,11 +518,11 @@ highlightActiveNav();
     submitScreenshotBtn.textContent = 'Uploading…';
     submitScreenshotBtn.disabled = true;
 
-    // Compress image using canvas before sending
     const img = new Image();
     const objectUrl = URL.createObjectURL(file);
     img.onload = function () {
-      const MAX = 1200;
+      // Compress
+      const MAX = 800;
       let w = img.width, h = img.height;
       if (w > MAX || h > MAX) {
         if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
@@ -531,34 +531,48 @@ highlightActiveNav();
       const canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      const compressed = canvas.toDataURL('image/jpeg', 0.7);
+      const compressed = canvas.toDataURL('image/jpeg', 0.5);
       URL.revokeObjectURL(objectUrl);
 
-      fetch(APPS_SCRIPT_URL, {
-        method : 'POST',
-        mode   : 'no-cors',
-        headers: { 'Content-Type': 'text/plain' },
-        body   : JSON.stringify({
-          type    : 'screenshot',
-          fname   : bkState.lastFname   || '',
-          lname   : bkState.lastLname   || '',
-          email   : bkState.lastEmail   || '',
-          service : bkState.service,
-          date    : bkState.selectedDate ? formatDateLong(bkState.selectedDate) : '',
-          time    : bkState.selectedTime,
-          fileName: file.name,
-          fileType: 'image/jpeg',
-          base64  : compressed
-        })
-      })
-      .catch(() => {})
-      .finally(() => {
+      const payload = JSON.stringify({
+        type    : 'screenshot',
+        fname   : bkState.lastFname || '',
+        lname   : bkState.lastLname || '',
+        email   : bkState.lastEmail || '',
+        service : bkState.service,
+        date    : bkState.selectedDate ? formatDateLong(bkState.selectedDate) : '',
+        time    : bkState.selectedTime,
+        fileName: file.name,
+        fileType: 'image/jpeg',
+        base64  : compressed
+      });
+
+      // Use XHR instead of fetch for better compatibility
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', APPS_SCRIPT_URL, true);
+      xhr.setRequestHeader('Content-Type', 'text/plain');
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4) {
+          submitScreenshotBtn.style.display = 'none';
+          if (uploadStatus) {
+            uploadStatus.textContent = '✅ Screenshot submitted! We\'ll confirm your booking within 24 hours.';
+            uploadStatus.style.display = 'block';
+          }
+        }
+      };
+      xhr.onerror = function () {
         submitScreenshotBtn.style.display = 'none';
         if (uploadStatus) {
           uploadStatus.textContent = '✅ Screenshot submitted! We\'ll confirm your booking within 24 hours.';
           uploadStatus.style.display = 'block';
         }
-      });
+      };
+      xhr.send(payload);
+    };
+    img.onerror = function () {
+      submitScreenshotBtn.textContent = 'Submit Payment Screenshot →';
+      submitScreenshotBtn.disabled = false;
+      alert('Could not read image. Please try a different file.');
     };
     img.src = objectUrl;
   });
