@@ -426,6 +426,11 @@ highlightActiveNav();
       return;
     }
 
+    // Save for screenshot upload
+    bkState.lastFname = fname;
+    bkState.lastLname = lname;
+    bkState.lastEmail = email;
+
     const submitBtn = bkForm.querySelector('button[type="submit"]');
     submitBtn.textContent = 'Submitting…';
     submitBtn.disabled = true;
@@ -487,6 +492,62 @@ highlightActiveNav();
   const qrLightbox = document.getElementById('qrLightbox');
   qrImg?.addEventListener('click', () => qrLightbox?.classList.add('open'));
   qrLightbox?.addEventListener('click', () => qrLightbox?.classList.remove('open'));
+
+  // ── Screenshot upload ──────────────────────────────────────────────────────
+  const screenshotInput  = document.getElementById('bkScreenshotInput');
+  const screenshotPreview = document.getElementById('bkScreenshotPreview');
+  const submitScreenshotBtn = document.getElementById('bkSubmitScreenshot');
+  const uploadStatus     = document.getElementById('bkUploadStatus');
+  const uploadLabel      = document.getElementById('bkUploadLabel');
+
+  screenshotInput?.addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      if (screenshotPreview) { screenshotPreview.src = e.target.result; screenshotPreview.style.display = 'block'; }
+      if (submitScreenshotBtn) submitScreenshotBtn.style.display = 'block';
+      if (uploadLabel) uploadLabel.textContent = '✓ ' + file.name;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  submitScreenshotBtn?.addEventListener('click', function () {
+    const file = screenshotInput?.files[0];
+    if (!file) return;
+    submitScreenshotBtn.textContent = 'Uploading…';
+    submitScreenshotBtn.disabled = true;
+
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      fetch(APPS_SCRIPT_URL, {
+        method : 'POST',
+        mode   : 'no-cors',
+        headers: { 'Content-Type': 'text/plain' },
+        body   : JSON.stringify({
+          type    : 'screenshot',
+          fname   : bkState.lastFname   || '',
+          lname   : bkState.lastLname   || '',
+          email   : bkState.lastEmail   || '',
+          service : bkState.service,
+          date    : bkState.selectedDate ? formatDateLong(bkState.selectedDate) : '',
+          time    : bkState.selectedTime,
+          fileName: file.name,
+          fileType: file.type,
+          base64  : e.target.result
+        })
+      })
+      .catch(() => {})
+      .finally(() => {
+        submitScreenshotBtn.style.display = 'none';
+        if (uploadStatus) {
+          uploadStatus.textContent = '✅ Screenshot submitted! We\'ll confirm your booking within 24 hours.';
+          uploadStatus.style.display = 'block';
+        }
+      });
+    };
+    reader.readAsDataURL(file);
+  });
 
   // ── "Book Another Session" ─────────────────────────────────────────────────
   newBookingBtn?.addEventListener('click', () => {

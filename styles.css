@@ -1094,6 +1094,30 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   line-height: 1.5; text-align: center;
 }
 
+/* Screenshot Upload */
+.bk-upload-wrap {
+  margin: 16px 0 8px;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+}
+.bk-upload-title {
+  font-size: .9rem; font-weight: 700; color: var(--teal); margin: 0;
+}
+.bk-upload-sub {
+  font-size: .78rem; color: var(--gray-500); margin: 0; text-align: center;
+}
+.bk-upload-label-btn {
+  display: inline-block; cursor: pointer;
+  background: var(--teal); color: #fff;
+  padding: 10px 24px; border-radius: 8px;
+  font-size: .88rem; font-weight: 600;
+  transition: var(--transition);
+}
+.bk-upload-label-btn:hover { background: var(--teal-dark); }
+.bk-upload-status {
+  font-size: .82rem; font-weight: 600;
+  color: var(--teal); text-align: center; margin: 0;
+}
+
 .bk-new-booking {
   font-size: .85rem; font-weight: 600; color: var(--teal);
   cursor: pointer; padding: 8px 20px;

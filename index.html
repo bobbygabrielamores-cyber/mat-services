@@ -677,9 +677,18 @@
                   <div class="bk-gcash-row"><span>Name</span><strong>Marl Anthony Tabanag</strong></div>
                   <div class="bk-gcash-row"><span>Amount</span><strong>₱900.00</strong></div>
                 </div>
-                <a href="https://forms.gle/t8nuXNQPFTDJRPHp9" target="_blank" rel="noopener noreferrer" class="btn-primary btn-full bk-pay-btn">
-                  Submit Payment Screenshot →
-                </a>
+                <!-- Screenshot Upload -->
+                <div class="bk-upload-wrap">
+                  <p class="bk-upload-title">📎 Upload Payment Screenshot</p>
+                  <p class="bk-upload-sub">Take a screenshot of your GCash receipt and upload it below.</p>
+                  <input type="file" id="bkScreenshotInput" accept="image/*" style="display:none" />
+                  <label for="bkScreenshotInput" class="bk-upload-label-btn" id="bkUploadLabel">Select Screenshot</label>
+                  <img id="bkScreenshotPreview" alt="Payment screenshot preview" style="display:none;max-width:100%;border-radius:8px;margin-top:12px;" />
+                  <button type="button" class="btn-primary btn-full bk-submit-screenshot" id="bkSubmitScreenshot" style="display:none;margin-top:12px;">
+                    Submit Payment Screenshot →
+                  </button>
+                  <p id="bkUploadStatus" class="bk-upload-status" style="display:none;"></p>
+                </div>
                 <p class="bk-gcash-note">
                   ⏰ Your slot is reserved for <strong>24 hours</strong>. Send your receipt to confirm — unpaid slots will be released.
                 </p>
