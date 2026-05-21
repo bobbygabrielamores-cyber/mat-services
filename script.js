@@ -518,8 +518,22 @@ highlightActiveNav();
     submitScreenshotBtn.textContent = 'Uploading…';
     submitScreenshotBtn.disabled = true;
 
-    const reader = new FileReader();
-    reader.onload = function (e) {
+    // Compress image using canvas before sending
+    const img = new Image();
+    const objectUrl = URL.createObjectURL(file);
+    img.onload = function () {
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      const compressed = canvas.toDataURL('image/jpeg', 0.7);
+      URL.revokeObjectURL(objectUrl);
+
       fetch(APPS_SCRIPT_URL, {
         method : 'POST',
         mode   : 'no-cors',
@@ -533,8 +547,8 @@ highlightActiveNav();
           date    : bkState.selectedDate ? formatDateLong(bkState.selectedDate) : '',
           time    : bkState.selectedTime,
           fileName: file.name,
-          fileType: file.type,
-          base64  : e.target.result
+          fileType: 'image/jpeg',
+          base64  : compressed
         })
       })
       .catch(() => {})
@@ -546,7 +560,7 @@ highlightActiveNav();
         }
       });
     };
-    reader.readAsDataURL(file);
+    img.src = objectUrl;
   });
 
   // ── "Book Another Session" ─────────────────────────────────────────────────
